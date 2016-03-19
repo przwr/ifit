@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="f0570227-7087-4305-933d-30c2cb769c4a" name="Remote" url="http://wrobelprzemek.com">
+        <fileTransfer host="wrobelprzemek.com" port="21" password="dfe5dfc7dfcbdfdfdfd8df9ddfc5dfc7dfcfdfd0dfdadf9cdf93dfe6dff2" username="bluhome">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>
