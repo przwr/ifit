@@ -11,10 +11,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.9/ref/settings/
 """
 
-
 import os
-
-
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -49,6 +46,7 @@ SECRET_KEY = '_fx8meib6xczn(mn0dllz$=x%5+d(ki_y16#1924=cfz6a)v!)'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+TEMPLATE_DEBUG = True
 
 ALLOWED_HOSTS = {
 	'localhost'
@@ -58,7 +56,8 @@ SITE_ID = 2
 
 # Application definition
 
-INSTALLED_APPS = [
+
+INSTALLED_APPS = (
 	'django.contrib.admin',
 	'django.contrib.auth',
 	'django.contrib.contenttypes',
@@ -66,9 +65,18 @@ INSTALLED_APPS = [
 	'django.contrib.messages',
 	'django.contrib.staticfiles',
 	'django.contrib.sites',
+
 	'rest_framework',
+	'rest_framework.authtoken',
+	'rest_auth',
+
+	'allauth',
+	'allauth.account',
+	'rest_auth.registration',
+	'allauth.socialaccount',
+	'allauth.socialaccount.providers.facebook',
 	'ifit',
-]
+)
 
 MIDDLEWARE_CLASSES = [
 	'django.middleware.security.SecurityMiddleware',
@@ -155,28 +163,36 @@ USE_L10N = True
 
 USE_TZ = True
 
+LOGIN_REDIRECT_URL = '/app/api/user/'
+
 # ==========================================================#
 # REST Framework                                           #
 # ==========================================================#
 
 REST_FRAMEWORK = {
-	# Use Django's standard `django.contrib.auth` permissions,
-	# or allow read-only access for unauthenticated users:
-	'DEFAULT_PERMISSION_CLASSES': [
-		'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
-	],
-	# 'DEFAULT_PERMISSION_CLASSES': [
-	# 	'rest_framework.permissions.IsAuthenticated',
-	# ],
-	'DEFAULT_AUTHENTICATION_CLASSES': [
-		'rest_framework.authentication.BasicAuthentication',
-		'rest_framework.authentication.SessionAuthentication',
-	],
-	'DEFAULT_FILTER_BACKENDS': ('rest_framework.filters.DjangoFilterBackend',)
-}
+	'DEFAULT_PERMISSION_CLASSES': ['rest_framework.permissions.IsAuthenticated', ],
+	'DEFAULT_AUTHENTICATION_CLASSES': ['rest_framework.authentication.SessionAuthentication',
+	                                   'rest_framework.authentication.TokenAuthentication', ],
+	'DEFAULT_FILTER_BACKENDS': ('rest_framework.filters.DjangoFilterBackend',),
+	'DEFAULT_RENDERER_CLASSES': (
+		'rest_framework.renderers.JSONRenderer',
+	)}
+# Use Django's standard `django.contrib.auth` permissions,
+# or allow read-only access for unauthenticated users:
+# 'DEFAULT_PERMISSION_CLASSES': [
+# 	'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
+# ],
 
 # Turn off / on Web Browsable API
-BROWSABLE_API = True
 
+REST_SESSION_LOGIN = False
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+ACCOUNT_EMAIL_REQUIRED = False
+ACCOUNT_AUTHENTICATION_METHOD = 'username'
+ACCOUNT_EMAIL_VERIFICATION = 'optional'
+
+TEMPLATE_DIRS = [os.path.join(BASE_DIR, 'ifit/templates')]
+
+BROWSABLE_API = True
 if not BROWSABLE_API:
 	REST_FRAMEWORK['DEFAULT_RENDERER_CLASSES'] = ['rest_framework.renderers.JSONRenderer']

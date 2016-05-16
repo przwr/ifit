@@ -9,16 +9,32 @@ class GroupSerializer(serializers.ModelSerializer):
 		fields = ('id', 'name',)
 
 
+class ProfileSerializer(serializers.ModelSerializer):
+	class Meta:
+		model = Profile
+		fields = ('id', 'user', 'friends', 'challenges', 'points', 'avatar')
+
+
 class UserSerializer(serializers.ModelSerializer):
+	profile = ProfileSerializer()
+
 	class Meta:
 		model = User
-		fields = ('id', 'username', 'email', 'groups',)
+		fields = ('id', 'username', 'email', 'groups', 'profile')
 
 
 class ChallengeSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = Challenge
-		fields = ('id', 'title', 'description', 'value',)
+		fields = ('id', 'name', 'category', 'value', 'description', 'begin', 'end', 'owner')
+
+
+class ChallengeDataSerializer(serializers.ModelSerializer):
+	challenge = ChallengeSerializer()
+
+	class Meta:
+		model = ChallengeData
+		fields = ('id', 'user', 'challenge', 'state')
 
 	# link = serializers.SerializerMethodField()
 	#
