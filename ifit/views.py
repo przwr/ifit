@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 from django.contrib.auth.models import AnonymousUser
+from django.db.models import Q
 from django.http import HttpResponse
 from rest_framework import generics
 from rest_framework.exceptions import PermissionDenied
 
-from ifit.serializers import *
-
 from ifit.permissions import *
+from ifit.serializers import *
 
 
 def index(request):
@@ -20,10 +20,7 @@ class UsersList(generics.ListCreateAPIView):
 	def get_queryset(self):
 		user = self.request.user
 		if not isinstance(user, AnonymousUser):
-			if user.is_superuser:
-				return User.objects.all()
-			else:
-				return User.objects.filter(id=user.id)
+			return User.objects.filter(id=user.id)
 		raise PermissionDenied
 
 
@@ -65,26 +62,54 @@ class ChallengeDetail(generics.RetrieveUpdateDestroyAPIView):
 class ChallengeDataList(generics.ListCreateAPIView):
 	queryset = ChallengeData.objects.all()
 	serializer_class = ChallengeDataSerializer
-# permission_classes = (IsOwner,)
+	permission_classes = (IsUser,)
 
-# def get_queryset(self):
-# 	user = self.request.user
-# 	if isinstance(user, AnonymousUser):
-# 		raise PermissionDenied
-# 	return Challenge.objects.filter(owner=user)
+	def get_queryset(self):
+		user = self.request.user
+		if isinstance(user, AnonymousUser):
+			raise PermissionDenied
+		return ChallengeData.objects.filter(user=user)
 
 
 class ChallengeDataDetail(generics.RetrieveUpdateDestroyAPIView):
 	queryset = ChallengeData.objects.all()
 	serializer_class = ChallengeDataSerializer
-	# permission_classes = (IsOwner,)
+	permission_classes = (IsUser,)
 
 
 class ProfilesList(generics.ListCreateAPIView):
 	queryset = Profile.objects.all()
 	serializer_class = ProfileSerializer
 
+	def get_queryset(self):
+		user = self.request.user
+		if not isinstance(user, AnonymousUser):
+			return Profile.objects.filter(user=user)
+		raise PermissionDenied
+
 
 class ProfileDetail(generics.RetrieveUpdateDestroyAPIView):
 	queryset = Profile.objects.all()
 	serializer_class = ProfileSerializer
+
+
+class ChallengeDataDetail(generics.RetrieveUpdateDestroyAPIView):
+	queryset = ChallengeData.objects.all()
+	serializer_class = ChallengeDataSerializer
+	permission_classes = (IsUser,)
+
+
+class FriendRequestList(generics.ListCreateAPIView):
+	queryset = FriendRequest.objects.all()
+	serializer_class = FriendRequestSerializer
+
+	def get_queryset(self):
+		user = self.request.user
+		if not isinstance(user, AnonymousUser):
+			return FriendRequest.objects.filter(Q(requester=user) | Q(friend=user))
+		raise PermissionDenied
+
+
+class FriendRequestDetail(generics.RetrieveAPIView):
+	queryset = FriendRequest.objects.all()
+	serializer_class = FriendRequestSerializer

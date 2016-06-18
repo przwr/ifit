@@ -115,7 +115,7 @@ WSGI_APPLICATION = 'ifitchallenge.wsgi.application'
 if SERVER:
 	DATABASES = {
 		'default': {
-			'ENGINE': 'django.db.backends.postgresql_psycopg2',
+			'ENGINE': 'django.db.backends.mysql',
 			'NAME': 'bluhome_ifit',
 			'USER': 'bluhome_ifit',
 			'PASSWORD': 'jkrowling',

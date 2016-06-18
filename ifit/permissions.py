@@ -7,6 +7,12 @@ class IsOwner(permissions.BasePermission):
 		return obj.owner == request.user
 
 
+class IsUser(permissions.BasePermission):
+	def has_object_permission(self, request, view, obj):
+		# Permissions are only allowed to the owner.
+		return obj.user == request.user
+
+
 class IsSuperUser(permissions.BasePermission):
 	def has_object_permission(self, request, view, obj):
 		# Permissions are only allowed to the owner.
@@ -27,3 +33,13 @@ class IsOwnerOrReadOnly(permissions.BasePermission):
 
 		# Write permissions are only allowed to the owner.
 		return obj.owner == request.user
+
+
+class IsUserOrReadOnly(permissions.BasePermission):
+	def has_object_permission(self, request, view, obj):
+		# Read permissions are allowed to any request, so we'll always allow GET, HEAD or OPTIONS requests.
+		if request.method in permissions.SAFE_METHODS:
+			return True
+
+		# Write permissions are only allowed to the owner.
+		return obj.user == request.user

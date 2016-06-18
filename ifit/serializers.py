@@ -9,10 +9,18 @@ class GroupSerializer(serializers.ModelSerializer):
 		fields = ('id', 'name',)
 
 
+class FriendRequestSerializer(serializers.ModelSerializer):
+	class Meta:
+		model = FriendRequest
+		fields = ('id', 'requester', 'friend')
+
+
 class ProfileSerializer(serializers.ModelSerializer):
+	username = serializers.ReadOnlyField()
+
 	class Meta:
 		model = Profile
-		fields = ('id', 'user', 'friends', 'challenges', 'points', 'avatar')
+		fields = ('id', 'user', 'username', 'friends', 'friends_requests', 'challenges', 'points', 'avatar')
 
 
 class UserSerializer(serializers.ModelSerializer):
