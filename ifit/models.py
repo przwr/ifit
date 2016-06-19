@@ -51,7 +51,7 @@ class Challenge(models.Model):
 	description = models.TextField()
 	begin = models.DateTimeField()
 	end = models.DateTimeField(null=True, blank=True, )
-	owner = models.ForeignKey(User, null=True, blank=True)
+	owner = models.ForeignKey(Profile, null=True, blank=True)
 
 	class Meta:
 		verbose_name = 'Challenge'
@@ -69,7 +69,7 @@ class Challenge(models.Model):
 
 
 class ChallengeData(models.Model):
-	user = models.ForeignKey(User)
+	challenged = models.ForeignKey(Profile)
 	challenge = models.ForeignKey(Challenge)
 	state = models.CharField(default=RECEIVED, choices=STATES, max_length=2)
 

@@ -42,7 +42,7 @@ class GroupDetail(generics.RetrieveUpdateDestroyAPIView):
 	permission_classes = (IsOwnerOrReadOnly,)
 
 
-class ChallengesList(generics.ListCreateAPIView):
+class ChallengeList(generics.ListCreateAPIView):
 	serializer_class = ChallengeSerializer
 	permission_classes = (IsOwner,)
 
@@ -50,7 +50,8 @@ class ChallengesList(generics.ListCreateAPIView):
 		user = self.request.user
 		if isinstance(user, AnonymousUser):
 			raise PermissionDenied
-		return Challenge.objects.filter(owner=user)
+		profile = Profile.objects.get(user=user)
+		return Challenge.objects.filter(owner=profile)
 
 
 class ChallengeDetail(generics.RetrieveUpdateDestroyAPIView):
@@ -68,7 +69,8 @@ class ChallengeDataList(generics.ListCreateAPIView):
 		user = self.request.user
 		if isinstance(user, AnonymousUser):
 			raise PermissionDenied
-		return ChallengeData.objects.filter(user=user)
+		profile = Profile.objects.get(user=user)
+		return ChallengeData.objects.filter(challenged=profile)
 
 
 class ChallengeDataDetail(generics.RetrieveUpdateDestroyAPIView):
@@ -105,8 +107,9 @@ class FriendRequestList(generics.ListCreateAPIView):
 
 	def get_queryset(self):
 		user = self.request.user
+		profile = Profile.objects.get(user=user)
 		if not isinstance(user, AnonymousUser):
-			return FriendRequest.objects.filter(Q(requester=user) | Q(friend=user))
+			return FriendRequest.objects.filter(Q(requester=profile) | Q(friend=profile))
 		raise PermissionDenied
 
 

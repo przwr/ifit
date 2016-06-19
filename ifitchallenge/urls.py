@@ -2,13 +2,13 @@
 from django.conf.urls import url, include
 from django.contrib import admin
 from django.views.generic import TemplateView, RedirectView
-from rest_framework.authtoken import views
 
 from ifit.utils import *
 from ifit.views import *
 
 admin.autodiscover()
 
+# import ifit.signals ma tu być, bo inaczej nie będą działać sygnały!
 import ifit.signals
 
 urlpatterns = [
@@ -29,7 +29,7 @@ urlpatterns = [
 	url(r'^api/user/(?P<pk>[0-9]+)$', UserDetail.as_view(), name='user'),
 	url(r'^api/group/$', GroupsList.as_view(), name='groups'),
 	url(r'^api/group/(?P<pk>[0-9]+)$', GroupDetail.as_view(), name='group'),
-	url(r'^api/challenge/$', ChallengesList.as_view(), name='challenges'),
+	url(r'^api/challenge/$', ChallengeList.as_view(), name='challenges'),
 	url(r'^api/challenge/(?P<pk>[0-9]+)$', ChallengeDetail.as_view(), name='challenge'),
 	url(r'^api/challenge_data/$', ChallengeDataList.as_view(), name='challenge_data'),
 	url(r'^api/challenge_data/(?P<pk>[0-9]+)$', ChallengeDataDetail.as_view(), name='challenge_data'),
