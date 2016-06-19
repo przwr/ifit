@@ -63,7 +63,7 @@ class ChallengeDetail(generics.RetrieveUpdateDestroyAPIView):
 class ChallengeDataList(generics.ListCreateAPIView):
 	queryset = ChallengeData.objects.all()
 	serializer_class = ChallengeDataSerializer
-	permission_classes = (IsUser,)
+	permission_classes = (IsChallenged,)
 
 	def get_queryset(self):
 		user = self.request.user
@@ -76,7 +76,7 @@ class ChallengeDataList(generics.ListCreateAPIView):
 class ChallengeDataDetail(generics.RetrieveUpdateDestroyAPIView):
 	queryset = ChallengeData.objects.all()
 	serializer_class = ChallengeDataSerializer
-	permission_classes = (IsUser,)
+	permission_classes = (IsChallenged,)
 
 
 class ProfilesList(generics.ListCreateAPIView):
@@ -93,12 +93,6 @@ class ProfilesList(generics.ListCreateAPIView):
 class ProfileDetail(generics.RetrieveUpdateDestroyAPIView):
 	queryset = Profile.objects.all()
 	serializer_class = ProfileSerializer
-
-
-class ChallengeDataDetail(generics.RetrieveUpdateDestroyAPIView):
-	queryset = ChallengeData.objects.all()
-	serializer_class = ChallengeDataSerializer
-	permission_classes = (IsUser,)
 
 
 class FriendRequestList(generics.ListCreateAPIView):
