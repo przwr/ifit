@@ -41,4 +41,8 @@ urlpatterns = [
 	# FUNCTIONS
 	url(r'^api/add_friend/(?P<profile_id>[0-9]+)$', add_friend, name='add_friend'),
 	url(r'^api/remove_friend/(?P<profile_id>[0-9]+)$', remove_friend, name='remove_friend'),
+	url(r'^api/get_challenged/(?P<pk>[0-9]+)$', ChallengeViewSet.as_view({'get': 'get_challenged'}),
+	    name='get_challenged'),
+	url(r'^api/add_to_challenge/(?P<pk>[0-9]+)/$', ChallengeViewSet.as_view({'post': 'add_to_challenge'}),
+	    name='add_to_challenge'),
 ]

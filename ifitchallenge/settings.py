@@ -18,7 +18,8 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 SERVER = 'bluhome' in str(BASE_DIR)
 
-FORCE_SCRIPT_NAME = '/app'
+if SERVER:
+	FORCE_SCRIPT_NAME = '/app'
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.9/howto/static-files/
@@ -27,8 +28,11 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'ifit/static/')
 
 STATIC_URL = '/ifit/static/'
 
-# LOGIN_URL = '/app/admin/'
-LOGIN_REDIRECT_URL = '/app/api/'
+# LOGIN_URL = '/app/admin/
+if SERVER:
+	LOGIN_REDIRECT_URL = '/app/api/user/'
+else:
+	LOGIN_REDIRECT_URL = '/api/user/'
 # SESSION_COOKIE_PATH = '/app'
 # CSRF_COOKIE_PATH = '/app'
 # ADMIN_MEDIA_PREFIX = '/app/static/admin/'
@@ -68,11 +72,12 @@ INSTALLED_APPS = (
 
 	'rest_framework',
 	'rest_framework.authtoken',
+
 	'rest_auth',
+	'rest_auth.registration',
 
 	'allauth',
 	'allauth.account',
-	'rest_auth.registration',
 	'allauth.socialaccount',
 	'allauth.socialaccount.providers.facebook',
 	'ifit',
@@ -162,8 +167,6 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
-
-LOGIN_REDIRECT_URL = '/app/api/user/'
 
 # ==========================================================#
 # REST Framework                                           #

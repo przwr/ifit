@@ -42,7 +42,7 @@ class ChallengeDataSerializer(serializers.ModelSerializer):
 
 	class Meta:
 		model = ChallengeData
-		fields = ('id', 'user', 'challenge', 'state')
+		fields = ('id', 'challenged', 'challenge', 'state')
 
 	# link = serializers.SerializerMethodField()
 	#

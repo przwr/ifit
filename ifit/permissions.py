@@ -1,20 +1,22 @@
 from rest_framework import permissions
 
-from ifit.models import Profile
-
 
 class IsOwner(permissions.BasePermission):
 	def has_object_permission(self, request, view, obj):
 		# Permissions are only allowed to the owner.
-		profile = Profile.objects.get(user=request.user)
-		return obj.owner == profile
+		return obj.owner == request.user.profile
 
 
 class IsChallenged(permissions.BasePermission):
 	def has_object_permission(self, request, view, obj):
 		# Permissions are only allowed to the owner.
-		profile = Profile.objects.get(user=request.user)
-		return obj.challenged == profile
+		return obj.challenged == request.user.profile
+
+
+class IsChallengedOrOwner(permissions.BasePermission):
+	def has_object_permission(self, request, view, obj):
+		# Permissions are only allowed to the owner.
+		return obj.challenged == request.user.profile or obj.challenge.owner == request.user.profile
 
 
 class IsSuperUser(permissions.BasePermission):
