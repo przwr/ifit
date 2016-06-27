@@ -39,8 +39,10 @@ urlpatterns = [
 	url(r'^api/friend_request/(?P<pk>[0-9]+)$', FriendRequestDetail.as_view(), name='friend_request'),
 
 	# FUNCTIONS
-	url(r'^api/add_friend/(?P<profile_id>[0-9]+)$', add_friend, name='add_friend'),
-	url(r'^api/remove_friend/(?P<profile_id>[0-9]+)$', remove_friend, name='remove_friend'),
+	url(r'^api/add_friend/(?P<pk>[0-9]+)$', ProfileViewSet.as_view({'post': 'add_friend'}), name='add_friend'),
+	url(r'^api/accept_friend/(?P<pk>[0-9]+)$', FriendRequestViewSet.as_view({'post': 'accept_friend'}),
+	    name='accept_friend'),
+	url(r'^api/remove_friend/(?P<pk>[0-9]+)$', ProfileViewSet.as_view({'post': 'remove_friend'}), name='remove_friend'),
 	url(r'^api/get_challenged/(?P<pk>[0-9]+)$', ChallengeViewSet.as_view({'get': 'get_challenged'}),
 	    name='get_challenged'),
 	url(r'^api/add_to_challenge/(?P<pk>[0-9]+)/$', ChallengeViewSet.as_view({'post': 'add_to_challenge'}),

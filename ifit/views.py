@@ -1,15 +1,10 @@
 # -*- coding: utf-8 -*-
-from requests import Response
-
 from django.contrib.auth.models import AnonymousUser
 from django.db.models import Q
 from django.http import HttpResponse, JsonResponse
 from rest_framework import generics
-from rest_framework.decorators import detail_route, list_route
-from rest_framework.exceptions import PermissionDenied, NotFound
-from rest_framework.generics import get_object_or_404
-from rest_framework.status import HTTP_400_BAD_REQUEST
-from rest_framework.views import APIView
+from rest_framework.decorators import detail_route
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.viewsets import ModelViewSet
 
 from ifit.permissions import *
@@ -121,7 +116,7 @@ class ChallengeViewSet(ModelViewSet):
 	serializer_class = ChallengeSerializer
 
 	@detail_route(methods=['GET'])
-	def get_challenged(self, request, pk=None):
+	def get_challenged(self, request, pk):
 		if not isinstance(request.user, AnonymousUser):
 			challenge = self.get_object()
 			challenge_data = ChallengeData.objects.filter(challenge=challenge).values_list('challenged', flat=True)
@@ -133,7 +128,7 @@ class ChallengeViewSet(ModelViewSet):
 		raise PermissionDenied
 
 	@detail_route(methods=['POST'])
-	def add_to_challenge(self, request, pk=None):
+	def add_to_challenge(self, request, pk):
 		if not isinstance(request.user, AnonymousUser):
 			challenge = self.get_object()
 			me = request.user.profile
@@ -153,4 +148,63 @@ class ChallengeViewSet(ModelViewSet):
 				return JsonResponse({'added': added})
 			else:
 				return JsonResponse({'error': 'Missing parameter <challenged>'})
+		raise PermissionDenied
+
+
+class ProfileViewSet(ModelViewSet):
+	queryset = Profile.objects.all()
+	serializer_class = ProfileSerializer
+
+	@detail_route(methods=['POST'])
+	def add_friend(self, request, pk):
+		if not isinstance(request.user, AnonymousUser):
+			friend = self.get_object()
+			me = request.user.profile
+			if friend:
+				req = FriendRequest(request=me, friend=friend)
+				req.save()
+				me.friends_requests.add(req)
+				me.save()
+				friend.friends_requests.add(req)
+				friend.save()
+				return HttpResponse()
+			else:
+				return JsonResponse({'error': 'Wrong data!'})
+		raise PermissionDenied
+
+	@detail_route(methods=['POST'])
+	def remove_friend(self, request, pk):
+		if not isinstance(request.user, AnonymousUser):
+			friend = self.get_object()
+			me = request.user.profile
+			if len(me) and friend:
+				me.friends.remove(friend)
+				me.save()
+				friend.friends.remove(me)
+				friend.save()
+				return HttpResponse()
+			else:
+				return JsonResponse({'error': 'Wrong data!'})
+		raise PermissionDenied
+
+
+class FriendRequestViewSet(ModelViewSet):
+	queryset = FriendRequest.objects.all()
+	serializer_class = FriendRequestSerializer
+
+	@detail_route(methods=['POST'])
+	def accept_friend(self, request, pk):
+		if not isinstance(request.user, AnonymousUser):
+			req = self.get_object()
+			me = request.user.profile
+			if len(me) and req.friend == me:
+				friend = req.requester
+				friend.friends.add(me)
+				me.friends.add(friend)
+				me.save()
+				friend.save()
+				req.remove()
+				return HttpResponse()
+			else:
+				return JsonResponse({'error': 'Not Your friend request!'})
 		raise PermissionDenied

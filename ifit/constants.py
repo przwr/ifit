@@ -24,5 +24,3 @@ STATES = (
 	(DONE, 'wykonany'),
 	(FAILED, 'niewykonany'),
 )
-
-WRONG_DATA = u"Błędne dane!"
