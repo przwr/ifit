@@ -20,7 +20,6 @@ STATES = (
 	(RECEIVED, 'otrzymany'),
 	(ACCEPTED, 'zaakceptowany'),
 	(DECLINED, 'odrzucony'),
-	(CANCELED, 'anulowany'),
 	(DONE, 'wykonany'),
 	(FAILED, 'niewykonany'),
 )

@@ -7,6 +7,7 @@ from rest_framework.decorators import detail_route
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.viewsets import ModelViewSet
 
+from ifit.constants import DECLINED, FAILED, DONE, ACCEPTED
 from ifit.permissions import *
 from ifit.serializers import *
 
@@ -119,11 +120,11 @@ class ChallengeViewSet(ModelViewSet):
 	def get_challenged(self, request, pk):
 		if not isinstance(request.user, AnonymousUser):
 			challenge = self.get_object()
-			challenge_data = ChallengeData.objects.filter(challenge=challenge).values_list('challenged', flat=True)
-			profiles = Profile.objects.filter(id__in=challenge_data)
+			challenge_data = ChallengeData.objects.filter(challenge=challenge)
 			challenged = [
-				{'username': p.username, 'id': p.id, 'user': p.user.id, 'avatar': p.avatar.url if p.avatar else None}
-				for p in profiles]
+				{'username': ch.challenged.username, 'id': ch.challenged.id, 'user': ch.challenged.user.id,
+				 'avatar': ch.challenged.avatar.url if ch.challenged.avatar else None, 'state': ch.state}
+				for ch in challenge_data]
 			return JsonResponse(list(challenged), safe=False)
 		raise PermissionDenied
 
@@ -138,8 +139,8 @@ class ChallengeViewSet(ModelViewSet):
 				challenge_data = ChallengeData.objects.filter(challenge=challenge).values_list('challenged__id',
 				                                                                               flat=True)
 				friends = me.friends.all().values_list('id', flat=True)
-				profiles = Profile.objects.filter(id__in=challenged).exclude(id__in=challenge_data).exclude(
-					id__in=friends)
+				profiles = Profile.objects.filter(Q(id__in=challenged) & Q(id__in=friends)).exclude(
+					id__in=challenge_data)
 				added = 0
 				for profile in profiles:
 					new_challenge_data = ChallengeData(challenge=challenge, challenged=profile)
@@ -148,6 +149,41 @@ class ChallengeViewSet(ModelViewSet):
 				return JsonResponse({'added': added})
 			else:
 				return JsonResponse({'error': 'Missing parameter <challenged>'})
+		raise PermissionDenied
+
+
+class ChallengeDataViewSet(ModelViewSet):
+	queryset = ChallengeData.objects.all()
+	serializer_class = ChallengeDataSerializer
+
+	@detail_route(methods=['POST'])
+	def challenge_response(self, request, pk):
+		if not isinstance(request.user, AnonymousUser):
+			challenge_data = self.get_object()
+			if not request.user.profile or challenge_data.challenged != request.user.profile:
+				raise PermissionDenied
+			if 'state' in request.POST:
+				state = request.POST["state"]
+				if challenge_data.state == RECEIVED:
+					if state:
+						challenge_data.state = ACCEPTED
+						challenge_data.save()
+						return JsonResponse({'changed': 'Yes'})
+					else:
+						challenge_data.state = DECLINED
+						challenge_data.save()
+						return JsonResponse({'changed': 'Yes'})
+				if challenge_data.state == ACCEPTED:
+					if not state:
+						challenge_data.state = FAILED
+						challenge_data.save()
+						return JsonResponse({'changed': 'Yes'})
+					else:
+						return JsonResponse({'changed': 'No'})
+				else:
+					return JsonResponse({'changed': 'No'})
+			else:
+				return JsonResponse({'error': 'Missing parameter <state>'})
 		raise PermissionDenied
 
 
