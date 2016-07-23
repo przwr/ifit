@@ -6,10 +6,6 @@ from django.dispatch import receiver
 from ifit.models import Challenge, Profile
 
 
-@receiver(pre_save, sender=Challenge)
-def add_owner(sender, **kwargs):
-	challenge = kwargs['instance']
-
 
 @receiver(post_save, sender=User)
 def add_owner(sender, **kwargs):

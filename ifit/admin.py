@@ -3,7 +3,7 @@ from django.contrib.auth.admin import UserAdmin
 
 from ifit.models import *
 
-admin.site.register(Challenge)
+# admin.site.register(Challenge)
 admin.site.register(ChallengeData)
 admin.site.register(Profile)
 admin.site.register(FriendRequest)
@@ -19,6 +19,14 @@ class ChallengeAdmin(admin.ModelAdmin):
 		obj.save()
 
 
+# class ChallengeDataAdmin(admin.ModelAdmin):
+# 	fields = ('challenger', 'challenged', 'challenge', 'state')
+#
+# 	def save_model(self, request, obj, form, change):
+# 		obj.challenger = request.user.profile
+# 		obj.save()
+
+
 class UserProfileInline(admin.StackedInline):
 	model = Profile
 
@@ -27,4 +35,6 @@ class UserProfileAdmin(UserAdmin):
 	inlines = [UserProfileInline, ]
 
 
+admin.site.register(Challenge, ChallengeAdmin)
+# admin.site.register(ChallengeData, ChallengeDataAdmin)
 admin.site.register(User, UserProfileAdmin)

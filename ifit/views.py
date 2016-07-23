@@ -3,11 +3,13 @@ from django.contrib.auth.models import AnonymousUser
 from django.db.models import Q
 from django.http import HttpResponse, JsonResponse
 from rest_framework import generics
+from rest_framework import status
 from rest_framework.decorators import detail_route
 from rest_framework.exceptions import PermissionDenied
+from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
-from ifit.constants import DECLINED, FAILED, DONE, ACCEPTED
+from ifit.constants import DECLINED, FAILED, ACCEPTED, DONE
 from ifit.permissions import *
 from ifit.serializers import *
 
@@ -122,7 +124,7 @@ class ChallengeViewSet(ModelViewSet):
 			challenge = self.get_object()
 			challenge_data = ChallengeData.objects.filter(challenge=challenge)
 			challenged = [
-				{'username': ch.challenged.username, 'id': ch.challenged.id, 'user': ch.challenged.user.id,
+				{'username': ch.challenged.username, 'id': ch.id, 'profile': ch.challenged.id,
 				 'avatar': ch.challenged.avatar.url if ch.challenged.avatar else None, 'state': ch.state}
 				for ch in challenge_data]
 			return JsonResponse(list(challenged), safe=False)
@@ -135,20 +137,50 @@ class ChallengeViewSet(ModelViewSet):
 			me = request.user.profile
 			if 'challenged' in request.POST:
 				challenged = request.POST["challenged"]
-				challenged = [c for c in challenged.split()]
+				challenged_array = []
+				for c in challenged.split('_'):
+					if c.isdigit():
+						challenged_array.append(c)
 				challenge_data = ChallengeData.objects.filter(challenge=challenge).values_list('challenged__id',
 				                                                                               flat=True)
-				friends = me.friends.all().values_list('id', flat=True)
-				profiles = Profile.objects.filter(Q(id__in=challenged) & Q(id__in=friends)).exclude(
+				# friends = me.friends.all().values_list('id', flat=True)
+				# profiles = Profile.objects.filter(Q(id__in=challenged) & Q(id__in=friends)).exclude(
+				# 	id__in=challenge_data)
+
+				profiles = Profile.objects.filter(id__in=challenged_array).exclude(id=me.id).exclude(
 					id__in=challenge_data)
-				added = 0
+				added = []
 				for profile in profiles:
-					new_challenge_data = ChallengeData(challenge=challenge, challenged=profile)
+					new_challenge_data = ChallengeData(challenger=me, challenge=challenge, challenged=profile)
 					new_challenge_data.save()
-					added += 1
+					added.append(profile.id)
 				return JsonResponse({'added': added})
 			else:
 				return JsonResponse({'error': 'Missing parameter <challenged>'})
+		raise PermissionDenied
+
+	@detail_route(methods=['POST'])
+	def set_all_challenges_result(self, request, pk):
+		if not isinstance(request.user, AnonymousUser):
+			challenge = self.get_object()
+			set_count = 0
+			if not request.user.profile:
+				raise PermissionDenied
+			if 'state' in request.POST:
+				state = request.POST["state"] == "True"
+				challenge_datas = ChallengeData.objects.filter(challenge=challenge, challenger=request.user.profile)
+				for challenge_data in challenge_datas:
+					if challenge_data.state == ACCEPTED:
+						if state:
+							challenge_data.state = DONE
+							challenge_data.save()
+						else:
+							challenge_data.state = FAILED
+							challenge_data.save()
+						set_count += 1
+				return JsonResponse({'set_count': set_count})
+			else:
+				return JsonResponse({'error': 'Missing parameter <state>'})
 		raise PermissionDenied
 
 
@@ -163,7 +195,7 @@ class ChallengeDataViewSet(ModelViewSet):
 			if not request.user.profile or challenge_data.challenged != request.user.profile:
 				raise PermissionDenied
 			if 'state' in request.POST:
-				state = request.POST["state"]
+				state = request.POST["state"] == "True"
 				if challenge_data.state == RECEIVED:
 					if state:
 						challenge_data.state = ACCEPTED
@@ -186,6 +218,39 @@ class ChallengeDataViewSet(ModelViewSet):
 				return JsonResponse({'error': 'Missing parameter <state>'})
 		raise PermissionDenied
 
+	@detail_route(methods=['POST'])
+	def remove_from_challenge(self, request, pk):
+		if not isinstance(request.user, AnonymousUser):
+			challenge_data = self.get_object()
+			if not request.user.profile or challenge_data.challenger != request.user.profile:
+				raise PermissionDenied
+			challenge_data.delete()
+			return Response({'status': 'Ok'}, status=status.HTTP_200_OK)
+		raise PermissionDenied
+
+	@detail_route(methods=['POST'])
+	def set_challenge_result(self, request, pk):
+		if not isinstance(request.user, AnonymousUser):
+			challenge_data = self.get_object()
+			if not request.user.profile or challenge_data.challenger != request.user.profile:
+				raise PermissionDenied
+			if 'state' in request.POST:
+				state = request.POST["state"] == "True"
+				if challenge_data.state == ACCEPTED:
+					if state:
+						challenge_data.state = DONE
+						challenge_data.save()
+						return JsonResponse({'set': 'Yes'})
+					else:
+						challenge_data.state = FAILED
+						challenge_data.save()
+						return JsonResponse({'set': 'Yes'})
+				else:
+					return JsonResponse({'set': 'No'})
+			else:
+				return JsonResponse({'error': 'Missing parameter <state>'})
+		raise PermissionDenied
+
 
 class ProfileViewSet(ModelViewSet):
 	queryset = Profile.objects.all()
@@ -196,7 +261,7 @@ class ProfileViewSet(ModelViewSet):
 		if not isinstance(request.user, AnonymousUser):
 			friend = self.get_object()
 			me = request.user.profile
-			if friend:
+			if me and friend:
 				req = FriendRequest(request=me, friend=friend)
 				req.save()
 				me.friends_requests.add(req)
@@ -213,7 +278,7 @@ class ProfileViewSet(ModelViewSet):
 		if not isinstance(request.user, AnonymousUser):
 			friend = self.get_object()
 			me = request.user.profile
-			if len(me) and friend:
+			if me and friend:
 				me.friends.remove(friend)
 				me.save()
 				friend.friends.remove(me)
@@ -233,14 +298,26 @@ class FriendRequestViewSet(ModelViewSet):
 		if not isinstance(request.user, AnonymousUser):
 			req = self.get_object()
 			me = request.user.profile
-			if len(me) and req.friend == me:
+			if me and req.friend == me:
 				friend = req.requester
 				friend.friends.add(me)
 				me.friends.add(friend)
 				me.save()
 				friend.save()
-				req.remove()
-				return HttpResponse()
+				req.delete()
+				return JsonResponse({})
+			else:
+				return JsonResponse({'error': 'Not Your friend request!'})
+		raise PermissionDenied
+
+	@detail_route(methods=['POST'])
+	def reject_friend(self, request, pk):
+		if not isinstance(request.user, AnonymousUser):
+			req = self.get_object()
+			me = request.user.profile
+			if me and req.friend == me:
+				req.delete()
+				return JsonResponse({})
 			else:
 				return JsonResponse({'error': 'Not Your friend request!'})
 		raise PermissionDenied

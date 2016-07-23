@@ -7,7 +7,7 @@ from django.contrib.auth.models import User
 
 
 class FriendRequest(models.Model):
-	requester = models.ForeignKey('Profile', null=True, blank=True, related_name='requester')
+	requester = models.ForeignKey('Profile', null=True, blank=True, related_name='requester_profile')
 	friend = models.ForeignKey('Profile', related_name='requested_friend')
 
 	class Meta:
@@ -69,7 +69,8 @@ class Challenge(models.Model):
 
 
 class ChallengeData(models.Model):
-	challenged = models.ForeignKey(Profile)
+	challenger = models.ForeignKey(Profile, null=True, blank=True, related_name='challenger_profile')
+	challenged = models.ForeignKey(Profile, related_name="challenged_profile")
 	challenge = models.ForeignKey(Challenge)
 	state = models.CharField(default=RECEIVED, choices=STATES, max_length=2)
 

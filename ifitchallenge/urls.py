@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 from django.conf.urls import url, include
 from django.contrib import admin
-from django.views.generic import TemplateView, RedirectView
+from django.views.generic import TemplateView
 
 from ifit.utils import *
 from ifit.views import *
 
-admin.autodiscover()
-
 # import ifit.signals ma tu być, bo inaczej nie będą działać sygnały!
-import ifit.signals
+import ifit.signals as sign
+
+admin.autodiscover()
 
 urlpatterns = [
 	url(r'^admin/', admin.site.urls),
@@ -39,12 +39,25 @@ urlpatterns = [
 	url(r'^api/friend_request/(?P<pk>[0-9]+)$', FriendRequestDetail.as_view(), name='friend_request'),
 
 	# FUNCTIONS
-	url(r'^api/add_friend/(?P<pk>[0-9]+)$', ProfileViewSet.as_view({'post': 'add_friend'}), name='add_friend'),
-	url(r'^api/accept_friend/(?P<pk>[0-9]+)$', FriendRequestViewSet.as_view({'post': 'accept_friend'}),
+	url(r'^api/add_friend/(?P<pk>[0-9]+)/$', ProfileViewSet.as_view({'post': 'add_friend'}), name='add_friend'),
+	url(r'^api/accept_friend/(?P<pk>[0-9]+)/$', FriendRequestViewSet.as_view({'post': 'accept_friend'}),
 	    name='accept_friend'),
-	url(r'^api/remove_friend/(?P<pk>[0-9]+)$', ProfileViewSet.as_view({'post': 'remove_friend'}), name='remove_friend'),
+	url(r'^api/reject_friend/(?P<pk>[0-9]+)/$', FriendRequestViewSet.as_view({'post': 'reject_friend'}),
+	    name='reject_friend'),
+
 	url(r'^api/get_challenged/(?P<pk>[0-9]+)$', ChallengeViewSet.as_view({'get': 'get_challenged'}),
 	    name='get_challenged'),
+	url(r'^api/remove_friend/(?P<pk>[0-9]+)/$', ProfileViewSet.as_view({'post': 'remove_friend'}),
+	    name='remove_friend'),
 	url(r'^api/add_to_challenge/(?P<pk>[0-9]+)/$', ChallengeViewSet.as_view({'post': 'add_to_challenge'}),
 	    name='add_to_challenge'),
+	url(r'^api/remove_from_challenge/(?P<pk>[0-9]+)/$', ChallengeDataViewSet.as_view({'post': 'remove_from_challenge'}),
+	    name='remove_from_challenge'),
+	url(r'^api/challenge_response/(?P<pk>[0-9]+)/$', ChallengeDataViewSet.as_view({'post': 'challenge_response'}),
+	    name='challenge_response'),
+	url(r'^api/set_challenge_result/(?P<pk>[0-9]+)/$', ChallengeDataViewSet.as_view({'post': 'set_challenge_result'}),
+	    name='set_challenge_result'),
+	url(r'^api/set_all_challenges_result/(?P<pk>[0-9]+)/$',
+	    ChallengeDataViewSet.as_view({'post': 'set_all_challenges_result'}),
+	    name='set_all_challenges_result'),
 ]
