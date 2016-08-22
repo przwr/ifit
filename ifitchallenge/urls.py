@@ -44,6 +44,7 @@ urlpatterns = [
 	    name='accept_friend'),
 	url(r'^api/reject_friend/(?P<pk>[0-9]+)/$', FriendRequestViewSet.as_view({'post': 'reject_friend'}),
 	    name='reject_friend'),
+	url(r'^api/search_profile/$', ProfileViewSet.as_view({'get': 'search_profile'}), name='search_profile'),
 
 	url(r'^api/get_challenged/(?P<pk>[0-9]+)$', ChallengeViewSet.as_view({'get': 'get_challenged'}),
 	    name='get_challenged'),

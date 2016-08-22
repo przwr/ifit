@@ -8,6 +8,7 @@ admin.site.register(ChallengeData)
 admin.site.register(Profile)
 admin.site.register(FriendRequest)
 admin.site.unregister(User)
+admin.site.unregister(ImageFile)
 
 
 # TODO test adding owner

@@ -50,7 +50,6 @@ SECRET_KEY = '_fx8meib6xczn(mn0dllz$=x%5+d(ki_y16#1924=cfz6a)v!)'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-TEMPLATE_DEBUG = True
 
 ALLOWED_HOSTS = {
 	'localhost'
@@ -96,22 +95,6 @@ MIDDLEWARE_CLASSES = [
 
 ROOT_URLCONF = 'ifitchallenge.urls'
 
-TEMPLATES = [
-	{
-		'BACKEND': 'django.template.backends.django.DjangoTemplates',
-		'DIRS': [],
-		'APP_DIRS': True,
-		'OPTIONS': {
-			'context_processors': [
-				'django.template.context_processors.debug',
-				'django.template.context_processors.request',
-				'django.contrib.auth.context_processors.auth',
-				'django.contrib.messages.context_processors.messages',
-			],
-		},
-	},
-]
-
 WSGI_APPLICATION = 'ifitchallenge.wsgi.application'
 
 # Database
@@ -121,6 +104,7 @@ if SERVER:
 	DATABASES = {
 		'default': {
 			'ENGINE': 'django.db.backends.mysql',
+			# 'ENGINE': 'django.db.backends.postgresql_psycopg2',
 			'NAME': 'bluhome_ifit',
 			'USER': 'bluhome_ifit',
 			'PASSWORD': 'jkrowling',
@@ -194,7 +178,23 @@ ACCOUNT_EMAIL_REQUIRED = False
 ACCOUNT_AUTHENTICATION_METHOD = 'username'
 ACCOUNT_EMAIL_VERIFICATION = 'optional'
 
-TEMPLATE_DIRS = [os.path.join(BASE_DIR, 'ifit/templates')]
+TEMPLATES = [
+	{
+		'BACKEND': 'django.template.backends.django.DjangoTemplates',
+		'DIRS': [os.path.join(BASE_DIR, 'ifit/templates')]
+		,
+		'APP_DIRS': True,
+		'OPTIONS': {
+			'context_processors': [
+				'django.template.context_processors.debug',
+				'django.template.context_processors.request',
+				'django.contrib.auth.context_processors.auth',
+				'django.contrib.messages.context_processors.messages',
+			],
+			'debug': True
+		},
+	},
+]
 
 BROWSABLE_API = True
 if not BROWSABLE_API:

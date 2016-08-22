@@ -1,4 +1,4 @@
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import Group
 from rest_framework import serializers
 from ifit.models import *
 
@@ -48,3 +48,11 @@ class ChallengeDataSerializer(serializers.ModelSerializer):
 	#
 	# def get_link(self, obj):
 	# 	return "http://wrobelprzemek.com/app/api/" + (self.Meta.model.__name__).lower() + "/" + str(obj.id) + "/"
+
+
+class ImageSerializer(serializers.ModelSerializer):
+	image = Base64ImageField(max_length=None, use_url=True)
+
+	class Meta:
+		model = ImageFile
+		fields = ("id", 'added')

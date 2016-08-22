@@ -15,7 +15,7 @@ from ifit.serializers import *
 
 
 def index(request):
-	return HttpResponse("To jest serwer aplikacji IF IT Challenge")
+	return HttpResponse("To jest serwer aplikacji Challenge4U")
 
 
 class UsersList(generics.ListCreateAPIView):
@@ -125,7 +125,7 @@ class ChallengeViewSet(ModelViewSet):
 			challenge_data = ChallengeData.objects.filter(challenge=challenge)
 			challenged = [
 				{'username': ch.challenged.username, 'id': ch.id, 'profile': ch.challenged.id,
-				 'avatar': ch.challenged.avatar.url if ch.challenged.avatar else None, 'state': ch.state}
+				 'avatar': ch.challenged.get_avatar, 'state': ch.state}
 				for ch in challenge_data]
 			return JsonResponse(list(challenged), safe=False)
 		raise PermissionDenied
@@ -286,6 +286,35 @@ class ProfileViewSet(ModelViewSet):
 				return HttpResponse()
 			else:
 				return JsonResponse({'error': 'Wrong data!'})
+		raise PermissionDenied
+
+	@detail_route(methods=['GET'])
+	def search_profile(self, request):
+		if not isinstance(request.user, AnonymousUser):
+			if not request.user.profile:
+				raise PermissionDenied
+			if 'phrase' in request.GET:
+				phrase = request.GET["phrase"]
+				result = self.queryset.filter(user__username__startswith=phrase).exclude(id=request.user.profile.id)
+				# TODO po wspólnych znajomych
+				found = [{'username': profile.user.username, 'id': profile.id, 'avatar': profile.get_avatar}
+				         for profile in result]
+				return JsonResponse({'found': list(found)})
+			else:
+				return JsonResponse({'error': 'Missing parameter <phrase>'})
+		raise PermissionDenied
+
+	# TODO zrobić wrzucanie avatara
+	@detail_route(methods=['POST'])
+	def upload_avatar(self, request):
+		if not isinstance(request.user, AnonymousUser):
+			if not request.user.profile:
+				raise PermissionDenied
+			if 'image' in request.GET:
+				image = request.GET["image"]
+				return JsonResponse({'status': "Ok"})
+			else:
+				return JsonResponse({'error': 'Missing parameter <image>'})
 		raise PermissionDenied
 
 
