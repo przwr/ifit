@@ -3,12 +3,11 @@ from django.contrib.auth.admin import UserAdmin
 
 from ifit.models import *
 
-# admin.site.register(Challenge)
 admin.site.register(ChallengeData)
 admin.site.register(Profile)
 admin.site.register(FriendRequest)
+admin.site.register(ImageFile)
 admin.site.unregister(User)
-admin.site.unregister(ImageFile)
 
 
 # TODO test adding owner

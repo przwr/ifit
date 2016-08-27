@@ -109,7 +109,7 @@ class FriendRequestList(generics.ListCreateAPIView):
 		raise PermissionDenied
 
 
-class FriendRequestDetail(generics.RetrieveAPIView):
+class FriendRequestDetail(generics.RetrieveAPIView, generics.DestroyAPIView):
 	queryset = FriendRequest.objects.all()
 	serializer_class = FriendRequestSerializer
 
@@ -304,17 +304,42 @@ class ProfileViewSet(ModelViewSet):
 				return JsonResponse({'error': 'Missing parameter <phrase>'})
 		raise PermissionDenied
 
-	# TODO zrobić wrzucanie avatara
-	@detail_route(methods=['POST'])
-	def upload_avatar(self, request):
+	@detail_route(methods=['GET'])
+	def get_avatar(self, request, pk):
 		if not isinstance(request.user, AnonymousUser):
 			if not request.user.profile:
 				raise PermissionDenied
-			if 'image' in request.GET:
-				image = request.GET["image"]
-				return JsonResponse({'status': "Ok"})
+			profile = self.get_object()
+			# TODO only friends?
+			return JsonResponse({'avatar': profile.avatar.image.url})
+		raise PermissionDenied
+
+	@detail_route(methods=['POST'])
+	def upload_avatar(self, request, pk):
+		if not isinstance(request.user, AnonymousUser):
+			if not request.user.profile:
+				raise PermissionDenied
+			profile = self.get_object()
+			if not request.user.profile.id == profile.id:
+				raise PermissionDenied
+			if len(request.FILES):
+				key = None
+				for k in request.FILES.keys():
+					key = k
+					break
+				f = request.FILES[key]
+
+				image = ImageFile(image=f)
+				image.save()
+				deleted = "kura"
+				if image:
+					if profile.avatar:
+						deleted = profile.avatar.delete()
+					profile.avatar = image
+					profile.save()
+				return JsonResponse({'status': deleted})
 			else:
-				return JsonResponse({'error': 'Missing parameter <image>'})
+				return JsonResponse({'error': 'Avatar file is missing'})
 		raise PermissionDenied
 
 

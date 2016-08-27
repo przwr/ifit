@@ -73,7 +73,7 @@ class Base64ImageField(serializers.ImageField):
 
 
 class ImageFile(models.Model):
-	image = models.ImageField(upload_to='/images')
+	image = models.ImageField(upload_to='./images')
 	added = models.DateTimeField(auto_now_add=True)
 
 	def __unicode__(self):

@@ -7,7 +7,7 @@ from ifit.utils import *
 from ifit.views import *
 
 # import ifit.signals ma tu być, bo inaczej nie będą działać sygnały!
-import ifit.signals as sign
+import ifit.signals
 
 admin.autodiscover()
 
@@ -59,6 +59,11 @@ urlpatterns = [
 	url(r'^api/set_challenge_result/(?P<pk>[0-9]+)/$', ChallengeDataViewSet.as_view({'post': 'set_challenge_result'}),
 	    name='set_challenge_result'),
 	url(r'^api/set_all_challenges_result/(?P<pk>[0-9]+)/$',
-	    ChallengeDataViewSet.as_view({'post': 'set_all_challenges_result'}),
+	    ChallengeViewSet.as_view({'post': 'set_all_challenges_result'}),
 	    name='set_all_challenges_result'),
+
+	url(r'^api/upload_avatar/(?P<pk>[0-9]+)/$', ProfileViewSet.as_view({'post': 'upload_avatar'}),
+	    name='upload_avatar'),
+	url(r'^api/get_avatar/(?P<pk>[0-9]+)/$', ProfileViewSet.as_view({'get': 'get_avatar'}),
+	    name='get_avatar'),
 ]
